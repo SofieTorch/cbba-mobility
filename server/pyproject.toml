@@ -1,10 +1,15 @@
 [project]
 name = "server"
 version = "0.1.0"
-description = "Add your description here"
+description = "Open Transit API server"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "fastapi[standard]>=0.128.0",
-    "ruff>=0.14.11",
+    "fastapi[standard]>=0.115.0",
+    "ruff>=0.9.0",
+    "sqlmodel>=0.0.22",
+    "psycopg2-binary>=2.9.10",
+    "geoalchemy2>=0.15.0",
+    "shapely>=2.0.0",
+    "alembic>=1.14.0",
 ]
