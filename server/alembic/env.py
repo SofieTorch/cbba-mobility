@@ -8,7 +8,9 @@ from sqlmodel import SQLModel
 
 # Import all models so they're registered with SQLModel.metadata
 from models.line import Line  # noqa: F401
+from models.recording import LocationPoint, RecordingSession, SensorReading  # noqa: F401
 from models.route import Route  # noqa: F401
+from models.user import User  # noqa: F401
 
 config = context.config
 

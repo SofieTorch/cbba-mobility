@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Optional
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
+    from .recording import RecordingSession
     from .route import Route
 
 
@@ -25,8 +26,9 @@ class Line(LineBase, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     
-    # Relationship to routes
+    # Relationships
     routes: list["Route"] = Relationship(back_populates="line")
+    recordings: list["RecordingSession"] = Relationship(back_populates="line")
 
 
 class LineCreate(LineBase):
