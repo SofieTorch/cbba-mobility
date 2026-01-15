@@ -10,7 +10,8 @@ docker compose up -d
 2. Run migrations:
 
 ```bash
-docker compose exec server alembic upgrade head
+docker compose exec bash
+uv run alembic upgrade head
 ```
 
 3. API is available at (http://localhost:8000)[http://localhost:8000]
