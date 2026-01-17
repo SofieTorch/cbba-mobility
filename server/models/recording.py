@@ -19,6 +19,7 @@ class RecordingStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
+    ABANDONED = "abandoned"  # No activity for too long, auto-closed
 
 
 class RecordingSessionBase(SQLModel):
@@ -42,6 +43,7 @@ class RecordingSession(RecordingSessionBase, table=True):
     status: RecordingStatus = Field(default=RecordingStatus.IN_PROGRESS)
     started_at: datetime = Field(default_factory=datetime.utcnow)
     ended_at: Optional[datetime] = Field(default=None)
+    last_activity_at: datetime = Field(default_factory=datetime.utcnow)  # Updated on each batch upload
     
     # Computed path from all location points (updated when session ends)
     computed_path: Any = Field(
@@ -75,6 +77,7 @@ class RecordingSessionRead(RecordingSessionBase):
     status: RecordingStatus
     started_at: datetime
     ended_at: Optional[datetime]
+    last_activity_at: datetime
     computed_path: Optional[list[list[float]]] = None
     
     @model_validator(mode="before")
@@ -93,6 +96,7 @@ class RecordingSessionRead(RecordingSessionBase):
                 "status": data.status,
                 "started_at": data.started_at,
                 "ended_at": data.ended_at,
+                "last_activity_at": data.last_activity_at,
                 "computed_path": None
             }
             if data.computed_path is not None:

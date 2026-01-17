@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
@@ -6,6 +7,14 @@ from sqlmodel import Field, Relationship, SQLModel
 if TYPE_CHECKING:
     from .recording import RecordingSession
     from .route import Route
+    from .user import User
+
+
+class LineStatus(str, Enum):
+    """Status of a transit line."""
+    PENDING = "pending"    # User-submitted, awaiting admin review
+    APPROVED = "approved"  # Admin-approved, visible to all users
+    MERGED = "merged"      # Was merged into another line
 
 
 class LineBase(SQLModel):
@@ -19,6 +28,7 @@ class Line(LineBase, table=True):
     A transit line (e.g., "Line 42", "Red Line").
     
     A line can have multiple routes (e.g., outbound/inbound directions).
+    Lines can be user-submitted (pending) and require admin approval.
     """
     __tablename__ = "lines"
     
@@ -26,9 +36,15 @@ class Line(LineBase, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     
+    # Approval workflow
+    status: LineStatus = Field(default=LineStatus.PENDING)
+    submitted_by_id: Optional[int] = Field(default=None, foreign_key="users.id", index=True)
+    merged_into_id: Optional[int] = Field(default=None, foreign_key="lines.id")
+    
     # Relationships
     routes: list["Route"] = Relationship(back_populates="line")
     recordings: list["RecordingSession"] = Relationship(back_populates="line")
+    submitted_by: Optional["User"] = Relationship(back_populates="submitted_lines")
 
 
 class LineCreate(LineBase):
@@ -39,6 +55,9 @@ class LineCreate(LineBase):
 class LineRead(LineBase):
     """Schema for reading a line (API response)."""
     id: int
+    status: LineStatus
+    submitted_by_id: Optional[int] = None
+    merged_into_id: Optional[int] = None
     created_at: datetime
     updated_at: datetime
 
@@ -52,6 +71,7 @@ class LineUpdate(SQLModel):
     """Schema for updating a line (all fields optional)."""
     name: Optional[str] = Field(default=None, max_length=255)
     description: Optional[str] = Field(default=None, max_length=1000)
+    status: Optional[LineStatus] = None  # Admin can approve/reject
 
 
 # Import here to avoid circular imports

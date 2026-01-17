@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from sqlalchemy import text
 
 from database import engine
-from routes import lines_router, routes_router
+from routes import lines_router, recordings_router, routes_router
 
 
 @asynccontextmanager
@@ -26,6 +26,7 @@ app = FastAPI(
 
 # Include routers
 app.include_router(lines_router)
+app.include_router(recordings_router)
 app.include_router(routes_router)
 
 

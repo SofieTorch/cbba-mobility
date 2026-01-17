@@ -10,11 +10,17 @@ docker compose up -d
 2. Run migrations:
 
 ```bash
-docker compose exec bash
+docker compose exec server bash
 uv run alembic upgrade head
 ```
 
 3. API is available at (http://localhost:8000)[http://localhost:8000]
+
+4. To access the container and run commands inside the server environment:
+
+```bash
+docker compose exec server bash
+```
 
 ## Creating migrations
 
@@ -46,4 +52,22 @@ docker compose exec server alembic downgrade -1
 
 # Rollback to specific revision
 docker compose exec server alembic downgrade 001
+```
+
+## Running tests
+
+First, install test dependencies:
+
+```bash
+uv pip install -e ".[test]"
+```
+
+Then enter the container and run:
+
+```bash
+# Run tests
+uv run pytest
+
+# With coverage
+uv run pytest --cov=. --cov-report=html
 ```

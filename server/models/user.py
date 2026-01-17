@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Optional
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
+    from .line import Line
     from .recording import RecordingSession
 
 
@@ -23,8 +24,9 @@ class User(UserBase, table=True):
     is_active: bool = Field(default=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     
-    # Relationship to recording sessions
+    # Relationships
     recordings: list["RecordingSession"] = Relationship(back_populates="user")
+    submitted_lines: list["Line"] = Relationship(back_populates="submitted_by")
 
 
 class UserCreate(SQLModel):
