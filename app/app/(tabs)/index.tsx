@@ -1,98 +1,118 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+const HEADER_BLUE = '#09A6F3';
+const SEGMENT_ACTIVE = 'rgba(255, 255, 255, 0.35)';
+const SEGMENT_INACTIVE = 'transparent';
+
+type Segment = 'lineas' | 'mapa';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const insets = useSafeAreaInsets();
+  const [segment, setSegment] = useState<Segment>('lineas');
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  return (
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Explorar</Text>
+        <View style={styles.segmentedControl}>
+          <Pressable
+            style={[
+              styles.segment,
+              segment === 'lineas' && styles.segmentActive,
+            ]}
+            onPress={() => setSegment('lineas')}
+          >
+            <Text
+              style={[
+                styles.segmentText,
+                segment === 'lineas' && styles.segmentTextActive,
+              ]}
+            >
+              Líneas
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[
+              styles.segment,
+              segment === 'mapa' && styles.segmentActive,
+            ]}
+            onPress={() => setSegment('mapa')}
+          >
+            <Text
+              style={[
+                styles.segmentText,
+                segment === 'mapa' && styles.segmentTextActive,
+              ]}
+            >
+              Mapa
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+
+      {/* Content card */}
+      <View style={styles.card}>
+        {/* Placeholder for Líneas or Mapa content */}
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    backgroundColor: '#E5E7EB',
+  },
+  header: {
+    backgroundColor: HEADER_BLUE,
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 28,
     alignItems: 'center',
-    gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  title: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 16,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  segmentedControl: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
+    borderRadius: 9999,
+    padding: 4,
+    maxWidth: 280,
+    alignSelf: 'center',
+  },
+  segment: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 9999,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  segmentActive: {
+    backgroundColor: SEGMENT_ACTIVE,
+  },
+  segmentText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.9)',
+  },
+  segmentTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  card: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    marginTop: -16,
+    minHeight: 400,
   },
 });

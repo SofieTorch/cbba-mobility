@@ -7,7 +7,7 @@
 //   ? 'http://localhost:8000'  // Development
 //   : 'https://api.yourdomain.com';  // Production
 
-const API_BASE_URL = 'https://movility-cbba-ndkpt.ondigitalocean.app/';
+const API_BASE_URL = 'https://movility-cbba-ndkpt.ondigitalocean.app';
 
 export interface Line {
   id: number;

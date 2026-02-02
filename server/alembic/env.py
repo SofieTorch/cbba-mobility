@@ -25,9 +25,13 @@ if config.config_file_name is not None:
 target_metadata = SQLModel.metadata
 
 
+# Tables that belong to our app; any other table (PostGIS, Tiger geocoder, etc.) is ignored.
+_APP_TABLES = {"lines", "routes", "users", "recording_sessions", "location_points", "sensor_readings"}
+
+
 def include_object(object, name, type_, reflected, compare_to):
-    """Exclude PostGIS system tables from autogenerate."""
-    if type_ == "table" and name == "spatial_ref_sys":
+    """Exclude PostGIS/extension tables from autogenerate so we never generate drops for them."""
+    if type_ == "table" and name not in _APP_TABLES and name != "alembic_version":
         return False
     return True
 

@@ -1,25 +1,25 @@
 /**
  * Record tab - Start/stop recording transit data.
  */
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-  Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { Accelerometer, Gyroscope } from 'expo-sensors';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Alert,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { SwipeSwitch } from '@/components/swipe-switch';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { SwipeSwitch } from '@/components/swipe-switch';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import api, { Line, RecordingSession, LocationPoint, SensorReading } from '@/services/api';
+import api, { Line, LocationPoint, RecordingSession, SensorReading } from '@/services/api';
 import { styles } from '@/styles/record';
 
 // TODO: Replace with actual user authentication
@@ -64,7 +64,7 @@ export default function RecordScreen() {
 
   const loadLines = async () => {
     try {
-      const fetchedLines = await api.getLines('approved');
+      const fetchedLines = await api.getLines();
       setLines(fetchedLines);
     } catch (error) {
       console.error('Failed to load lines:', error);
