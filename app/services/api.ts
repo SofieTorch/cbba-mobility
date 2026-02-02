@@ -3,9 +3,11 @@
  */
 
 // Update this to your server URL
-const API_BASE_URL = __DEV__ 
-  ? 'http://localhost:8000'  // Development
-  : 'https://api.yourdomain.com';  // Production
+// const API_BASE_URL = __DEV__ 
+//   ? 'http://localhost:8000'  // Development
+//   : 'https://api.yourdomain.com';  // Production
+
+const API_BASE_URL = 'https://movility-cbba-ndkpt.ondigitalocean.app/';
 
 export interface Line {
   id: number;

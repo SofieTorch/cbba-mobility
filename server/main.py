@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from database import engine
@@ -22,6 +23,16 @@ app = FastAPI(
     description="API for managing transit lines and routes with geographic data",
     version="0.1.0",
     lifespan=lifespan
+)
+
+# CORS: allow any origin (mobile apps, WebViews, web clients).
+# Native mobile apps don't enforce CORS; this mainly affects browsers and in-app WebViews.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,  # must be False when allow_origins is ["*"]
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Include routers
