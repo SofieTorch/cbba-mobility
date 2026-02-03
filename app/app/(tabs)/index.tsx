@@ -1,16 +1,16 @@
+import { styles } from '@/styles/index';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-const HEADER_BLUE = '#09A6F3';
-const SEGMENT_ACTIVE = 'rgba(255, 255, 255, 0.35)';
-const SEGMENT_INACTIVE = 'transparent';
 
 type Segment = 'lineas' | 'mapa';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [segment, setSegment] = useState<Segment>('lineas');
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -53,66 +53,63 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Content card */}
-      <View style={styles.card}>
-        {/* Placeholder for Líneas or Mapa content */}
+      {/* From / To card */}
+      <View style={styles.searchCardWrapper}>
+        <View style={styles.searchCard}>
+          <View style={styles.searchInputRow}>
+            <View>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Origen"
+                placeholderTextColor="#9CA3AF"
+                value={from}
+                onChangeText={setFrom}
+              />
+            </View>
+            <View>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Destino"
+                placeholderTextColor="#9CA3AF"
+                value={to}
+                onChangeText={setTo}
+              />
+            </View>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.linesCard}>
+        <Text style={styles.linesCardTitle}>Líneas cercanas</Text>
+        <View style={styles.tableHeader}>
+          <View style={styles.tableCellIcon} />
+          <Text style={[styles.tableCell, styles.tableHeaderText]}>Línea</Text>
+          <Text style={[styles.tableCell, styles.tableHeaderText]}>Dirección</Text>
+        </View>
+        {/* Placeholder rows */}
+        <View style={styles.tableRow}>
+          <View style={styles.tableCellIcon}>
+            <MaterialCommunityIcons name="bus" size={22} color="#09A6F3" />
+          </View>
+          <Text style={styles.tableCell} numberOfLines={1}>150 Univalle</Text>
+          <Text style={styles.tableCell} numberOfLines={1}>Tiquipaya</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <View style={styles.tableCellIcon}>
+            <MaterialCommunityIcons name="bus" size={22} color="#09A6F3" />
+          </View>
+          <Text style={styles.tableCell} numberOfLines={1}>150</Text>
+          <Text style={styles.tableCell} numberOfLines={1}>Reducto</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <View style={styles.tableCellIcon}>
+            <MaterialCommunityIcons name="train" size={22} color="#6B7280" />
+          </View>
+          <Text style={styles.tableCell} numberOfLines={1}>150</Text>
+          <Text style={styles.tableCell} numberOfLines={1}>Cancha</Text>
+        </View>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#E5E7EB',
-  },
-  header: {
-    backgroundColor: HEADER_BLUE,
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 28,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginBottom: 16,
-  },
-  segmentedControl: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
-    borderRadius: 9999,
-    padding: 4,
-    maxWidth: 280,
-    alignSelf: 'center',
-  },
-  segment: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 9999,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  segmentActive: {
-    backgroundColor: SEGMENT_ACTIVE,
-  },
-  segmentText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: 'rgba(255, 255, 255, 0.9)',
-  },
-  segmentTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-  },
-  card: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    marginTop: -16,
-    minHeight: 400,
-  },
-});
