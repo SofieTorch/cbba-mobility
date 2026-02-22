@@ -1,14 +1,11 @@
 import { DarkTheme, DefaultTheme, ThemeProvider, type Theme } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
 import { DatabaseProvider } from '@/components/DatabaseProvider';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { syncPendingRecordings } from '@/services/sync';
-import NetInfo from '@react-native-community/netinfo';
 
 const LightTheme: Theme = {
   ...DefaultTheme,
@@ -33,15 +30,6 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-
-  useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener((state) => {
-      if (state.isConnected) {
-        syncPendingRecordings();
-      }
-    });
-    return () => unsubscribe();
-  }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

@@ -2,11 +2,27 @@
 
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 
 import { createDb } from '@/lib/db';
 import migrations from '@/drizzle/migrations';
+import { syncPendingRecordings } from '@/services/sync';
+
+/** Syncs pending recordings when network is back. Only mounts when db is ready. */
+function SyncOnReconnect({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      if (state.isConnected) {
+        syncPendingRecordings();
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  return <>{children}</>;
+}
 
 function MigrationsGate({ children }: { children: React.ReactNode }) {
   const expoDb = useSQLiteContext();
@@ -31,7 +47,7 @@ function MigrationsGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return <>{children}</>;
+  return <SyncOnReconnect>{children}</SyncOnReconnect>;
 }
 
 export function DatabaseProvider({ children }: { children: React.ReactNode }) {

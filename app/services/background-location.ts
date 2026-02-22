@@ -71,6 +71,12 @@ export async function startBackgroundLocation(): Promise<void> {
     timeInterval: LOCATION_INTERVAL_MS,
     distanceInterval: DISTANCE_INTERVAL_M,
     showsBackgroundLocationIndicator: true, // iOS blue pill when tracking
+    // Required on Android: keeps location tracking alive when app is backgrounded
+    foregroundService: {
+      notificationTitle: 'Recording transit route',
+      notificationBody: 'Location is being recorded in the background',
+      notificationColor: '#09A6F3',
+    },
   });
 }
 
