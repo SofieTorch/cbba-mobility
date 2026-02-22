@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from database import engine
-from routes import lines_router, recordings_router, routes_router
+from routes import lines_router, recordings_router
 
 
 @asynccontextmanager
@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Open Transit API",
-    description="API for managing transit lines and routes with geographic data",
+    description="API for managing transit lines with geographic data",
     version="0.1.0",
     lifespan=lifespan
 )
@@ -38,7 +38,6 @@ app.add_middleware(
 # Include routers
 app.include_router(lines_router)
 app.include_router(recordings_router)
-app.include_router(routes_router)
 
 
 @app.get("/")

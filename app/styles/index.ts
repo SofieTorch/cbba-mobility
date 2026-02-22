@@ -12,15 +12,8 @@ export const styles = StyleSheet.create({
     header: {
       backgroundColor: HEADER_BLUE,
       paddingHorizontal: 24,
-      paddingTop: 16,
       paddingBottom: 36,
       alignItems: 'center',
-    },
-    title: {
-      fontSize: 20,
-      fontWeight: '500',
-      color: '#FFFFFF',
-      marginBottom: 16,
     },
     segmentedControl: {
       flexDirection: 'row',

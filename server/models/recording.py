@@ -11,7 +11,6 @@ from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from .line import Line
-    from .user import User
 
 
 class RecordingStatus(str, Enum):
@@ -20,12 +19,13 @@ class RecordingStatus(str, Enum):
     COMPLETED = "completed"
     CANCELLED = "cancelled"
     ABANDONED = "abandoned"  # No activity for too long, auto-closed
+    DISCARDED = "discarded"  # Ended without selecting a line
 
 
 class RecordingSessionBase(SQLModel):
     """Base model for RecordingSession."""
-    line_id: int = Field(foreign_key="lines.id", index=True)
-    direction: Optional[str] = Field(default=None, max_length=100)  # Which direction they're traveling
+    line_id: Optional[int] = Field(default=None, foreign_key="lines.id", index=True)
+    direction: Optional[str] = Field(default=None, max_length=100)
     device_model: Optional[str] = Field(default=None, max_length=100)
     os_version: Optional[str] = Field(default=None, max_length=50)
     notes: Optional[str] = Field(default=None, sa_column=Column(Text))
@@ -36,10 +36,9 @@ class RecordingSession(RecordingSessionBase, table=True):
     A recording session capturing a single trip on a transit line.
     """
     __tablename__ = "recording_sessions"
-    
+
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="users.id", index=True)
-    
+
     status: RecordingStatus = Field(default=RecordingStatus.IN_PROGRESS)
     started_at: datetime = Field(default_factory=datetime.utcnow)
     ended_at: Optional[datetime] = Field(default=None)
@@ -55,25 +54,28 @@ class RecordingSession(RecordingSessionBase, table=True):
     )
     
     # Relationships
-    user: Optional["User"] = Relationship(back_populates="recordings")
     line: Optional["Line"] = Relationship(back_populates="recordings")
     location_points: list["LocationPoint"] = Relationship(back_populates="session")
     sensor_readings: list["SensorReading"] = Relationship(back_populates="session")
 
 
 class RecordingSessionCreate(SQLModel):
-    """Schema for starting a new recording session."""
-    line_id: int
+    """Schema for starting a new recording session (line is assigned later)."""
     direction: Optional[str] = None
     device_model: Optional[str] = None
     os_version: Optional[str] = None
     notes: Optional[str] = None
 
 
+class EndRecordingRequest(SQLModel):
+    """Schema for ending a recording session with an optional line assignment."""
+    line_id: Optional[int] = None
+    line_name: Optional[str] = None  # Create a new line with this name when line_id is null
+
+
 class RecordingSessionRead(RecordingSessionBase):
     """Schema for reading a recording session."""
     id: int
-    user_id: int
     status: RecordingStatus
     started_at: datetime
     ended_at: Optional[datetime]
@@ -87,7 +89,6 @@ class RecordingSessionRead(RecordingSessionBase):
         if isinstance(data, RecordingSession):
             result = {
                 "id": data.id,
-                "user_id": data.user_id,
                 "line_id": data.line_id,
                 "direction": data.direction,
                 "device_model": data.device_model,

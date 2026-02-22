@@ -12,67 +12,27 @@ from models.recording import (
     RecordingStatus,
     SensorReading,
 )
-from models.user import User
 
 
 class TestStartRecording:
     """Tests for POST /recordings/"""
-    
-    def test_start_recording_success(
-        self, client: TestClient, test_user: User, approved_line: Line
-    ):
-        """Should start a new recording session."""
+
+    def test_start_recording_success(self, client: TestClient):
+        """Should start a new recording session (line assigned later)."""
         response = client.post(
             "/recordings/",
-            params={"user_id": test_user.id},
             json={
-                "line_id": approved_line.id,
                 "direction": "northbound",
                 "device_model": "iPhone 15",
                 "os_version": "17.0",
-            }
+            },
         )
-        
+
         assert response.status_code == 201
         data = response.json()
-        assert data["line_id"] == approved_line.id
-        assert data["user_id"] == test_user.id
+        assert data["line_id"] is None
         assert data["status"] == "in_progress"
         assert data["direction"] == "northbound"
-    
-    def test_start_recording_line_not_found(self, client: TestClient, test_user: User):
-        """Should fail when line doesn't exist."""
-        response = client.post(
-            "/recordings/",
-            params={"user_id": test_user.id},
-            json={"line_id": 99999}
-        )
-        
-        assert response.status_code == 404
-        assert "Line not found" in response.json()["detail"]
-    
-    def test_start_recording_on_merged_line(
-        self, client: TestClient, db: Session, test_user: User, approved_line: Line
-    ):
-        """Should fail when trying to record on a merged line."""
-        merged_line = Line(
-            name="Merged Line",
-            status=LineStatus.MERGED,
-            merged_into_id=approved_line.id,
-            submitted_by_id=test_user.id,
-        )
-        db.add(merged_line)
-        db.commit()
-        db.refresh(merged_line)
-        
-        response = client.post(
-            "/recordings/",
-            params={"user_id": test_user.id},
-            json={"line_id": merged_line.id}
-        )
-        
-        assert response.status_code == 400
-        assert "merged" in response.json()["detail"].lower()
 
 
 class TestListRecordings:
@@ -87,19 +47,6 @@ class TestListRecordings:
         assert response.status_code == 200
         data = response.json()
         assert len(data) >= 1
-    
-    def test_list_recordings_filter_by_user(
-        self,
-        client: TestClient,
-        recording_session: RecordingSession,
-        test_user: User
-    ):
-        """Should filter recordings by user."""
-        response = client.get("/recordings/", params={"user_id": test_user.id})
-        
-        assert response.status_code == 200
-        data = response.json()
-        assert all(r["user_id"] == test_user.id for r in data)
     
     def test_list_recordings_filter_by_status(
         self,
@@ -119,21 +66,27 @@ class TestEndRecording:
     """Tests for POST /recordings/{session_id}/end"""
     
     def test_end_recording_success(
-        self, client: TestClient, recording_session: RecordingSession
+        self, client: TestClient, recording_session: RecordingSession, approved_line: Line
     ):
-        """Should end an in-progress recording."""
-        response = client.post(f"/recordings/{recording_session.id}/end")
-        
+        """Should end an in-progress recording with line assignment."""
+        response = client.post(
+            f"/recordings/{recording_session.id}/end",
+            json={"line_id": approved_line.id},
+        )
+
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "completed"
         assert data["ended_at"] is not None
     
     def test_end_already_completed_recording(
-        self, client: TestClient, completed_recording: RecordingSession
+        self, client: TestClient, completed_recording: RecordingSession, approved_line: Line
     ):
         """Should fail when session is not in progress."""
-        response = client.post(f"/recordings/{completed_recording.id}/end")
+        response = client.post(
+            f"/recordings/{completed_recording.id}/end",
+            json={"line_id": approved_line.id},
+        )
         
         assert response.status_code == 400
         assert "not in progress" in response.json()["detail"]
@@ -301,12 +254,10 @@ class TestStaleSessionCleanup:
     """Tests for POST /recordings/cleanup/stale"""
     
     def test_cleanup_stale_sessions(
-        self, client: TestClient, db: Session, test_user: User, approved_line: Line
+        self, client: TestClient, db: Session, approved_line: Line
     ):
         """Should mark old sessions as abandoned."""
-        # Create a stale session (last activity > 30 min ago)
         stale_session = RecordingSession(
-            user_id=test_user.id,
             line_id=approved_line.id,
             status=RecordingStatus.IN_PROGRESS,
             last_activity_at=datetime.utcnow() - timedelta(minutes=60),
@@ -348,11 +299,10 @@ class TestResumeRecording:
     """Tests for POST /recordings/{session_id}/resume"""
     
     def test_resume_abandoned_session(
-        self, client: TestClient, db: Session, test_user: User, approved_line: Line
+        self, client: TestClient, db: Session, approved_line: Line
     ):
         """Should resume an abandoned session."""
         abandoned = RecordingSession(
-            user_id=test_user.id,
             line_id=approved_line.id,
             status=RecordingStatus.ABANDONED,
             ended_at=datetime.utcnow() - timedelta(minutes=10),

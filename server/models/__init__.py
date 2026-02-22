@@ -1,4 +1,4 @@
-from .line import Line, LineCreate, LineRead, LineReadWithRoutes, LineUpdate
+from .line import Line, LineCreate, LineRead, LineUpdate
 from .recording import (
     LocationPoint,
     LocationPointBatch,
@@ -13,16 +13,9 @@ from .recording import (
     SensorReadingCreate,
     SensorReadingRead,
 )
-from .route import Route, RouteCreate, RouteRead, RouteUpdate
-from .user import User, UserCreate, UserRead
-
 __all__ = [
     # Line
-    "Line", "LineCreate", "LineRead", "LineReadWithRoutes", "LineUpdate",
-    # Route
-    "Route", "RouteCreate", "RouteRead", "RouteUpdate",
-    # User
-    "User", "UserCreate", "UserRead",
+    "Line", "LineCreate", "LineRead", "LineUpdate",
     # Recording
     "RecordingSession", "RecordingSessionCreate", "RecordingSessionRead", "RecordingStatus",
     "LocationPoint", "LocationPointCreate", "LocationPointRead", "LocationPointBatch",

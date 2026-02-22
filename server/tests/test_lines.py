@@ -4,7 +4,6 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from models.line import Line, LineStatus
-from models.user import User
 
 
 class TestCreateLine:
@@ -164,15 +163,13 @@ class TestMergeLine:
         self,
         client: TestClient,
         db: Session,
-        test_user: User,
         approved_line: Line,
-        pending_line: Line
+        pending_line: Line,
     ):
         """Should merge one line into another."""
-        # Create a recording on the pending line
         from models.recording import RecordingSession
+
         recording = RecordingSession(
-            user_id=test_user.id,
             line_id=pending_line.id,
             direction="test",
         )
@@ -207,15 +204,13 @@ class TestMergeLine:
         assert "Cannot merge a line into itself" in response.json()["detail"]
     
     def test_merge_already_merged_line(
-        self, client: TestClient, db: Session, test_user: User, approved_line: Line
+        self, client: TestClient, db: Session, approved_line: Line
     ):
         """Should fail when source line is already merged."""
-        # Create a merged line
         merged_line = Line(
             name="Already Merged",
             status=LineStatus.MERGED,
             merged_into_id=approved_line.id,
-            submitted_by_id=test_user.id,
         )
         db.add(merged_line)
         db.commit()

@@ -189,6 +189,8 @@ const styles = StyleSheet.create({
   thumbIcon: {
     fontSize: 18,
     color: '#374151',
+    marginBottom: 6,
+    marginLeft: 4,
   },
 });
 

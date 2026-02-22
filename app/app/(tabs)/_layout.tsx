@@ -2,39 +2,38 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@react-navigation/native';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const { colors } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: colors.primary,
         headerShown: false,
         tabBarButton: HapticTab,
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          tabBarShowLabel: false,
-          tabBarIcon: ({ color }: { color: string }) => <Ionicons size={28} name="map-outline" color={color} />,
+          tabBarIcon: ({ color }: { color: string }) => <Ionicons size={24} name="map-outline" color={color} />,
+          tabBarLabel: 'Rutas',
         }}
       />
       <Tabs.Screen
         name="record"
         options={{
-          tabBarShowLabel: false,
-          tabBarIcon: ({ color }: { color: string }) => <Ionicons size={28} name="locate" color={color} />,
+          tabBarLabel: 'Recorrido',
+          tabBarIcon: ({ color }: { color: string }) => <Ionicons size={24} name="locate" color={color} />,
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          tabBarShowLabel: false,
-          tabBarIcon: ({ color }: { color: string }) => <Ionicons size={28} name="star-outline" color={color} />,
+          tabBarLabel: 'Favoritos',
+          tabBarIcon: ({ color }: { color: string }) => <Ionicons size={24} name="star-outline" color={color} />,
         }}
       />
     </Tabs>

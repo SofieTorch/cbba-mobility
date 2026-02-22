@@ -7,27 +7,26 @@
 //   ? 'http://localhost:8000'  // Development
 //   : 'https://api.yourdomain.com';  // Production
 
-const API_BASE_URL = 'https://movility-cbba-ndkpt.ondigitalocean.app';
+// const API_BASE_URL = 'https://movility-cbba-ndkpt.ondigitalocean.app';
+const API_BASE_URL = 'http://192.168.1.229:8000';
 
 export interface Line {
   id: number;
   name: string;
   description: string | null;
   status: 'pending' | 'approved' | 'rejected' | 'merged';
-  submitted_by_id: number;
   created_at: string;
   updated_at: string;
 }
 
 export interface RecordingSession {
   id: number;
-  user_id: number;
-  line_id: number;
+  line_id: number | null;
   direction: string | null;
   device_model: string | null;
   os_version: string | null;
   notes: string | null;
-  status: 'in_progress' | 'completed' | 'cancelled' | 'abandoned';
+  status: 'in_progress' | 'completed' | 'cancelled' | 'abandoned' | 'discarded';
   started_at: string;
   ended_at: string | null;
   last_activity_at: string;
@@ -103,26 +102,29 @@ class ApiClient {
   // ============================================================
 
   async startRecording(
-    userId: number,
-    lineId: number,
-    direction?: string,
     deviceModel?: string,
     osVersion?: string
   ): Promise<RecordingSession> {
-    return this.request<RecordingSession>(`/recordings/?user_id=${userId}`, {
+    return this.request<RecordingSession>('/recordings/', {
       method: 'POST',
       body: JSON.stringify({
-        line_id: lineId,
-        direction,
         device_model: deviceModel,
         os_version: osVersion,
       }),
     });
   }
 
-  async endRecording(sessionId: number): Promise<RecordingSession> {
+  async endRecording(
+    sessionId: number,
+    lineId: number | null,
+    lineName: string | null
+  ): Promise<RecordingSession> {
     return this.request<RecordingSession>(`/recordings/${sessionId}/end`, {
       method: 'POST',
+      body: JSON.stringify({
+        line_id: lineId,
+        line_name: lineName,
+      }),
     });
   }
 

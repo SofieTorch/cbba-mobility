@@ -1,5 +1,7 @@
+import Header from '@/components/header';
 import { styles } from '@/styles/index';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTheme } from '@react-navigation/native';
 import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,15 +10,16 @@ type Segment = 'lineas' | 'mapa';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   const [segment, setSegment] = useState<Segment>('lineas');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
       {/* Header */}
+      <Header title="Explorar" />
       <View style={styles.header}>
-        <Text style={styles.title}>Explorar</Text>
         <View style={styles.segmentedControl}>
           <Pressable
             style={[

@@ -26,7 +26,6 @@ from database import get_db
 from main import app
 from models.line import Line, LineStatus
 from models.recording import RecordingSession, RecordingStatus
-from models.user import User
 
 
 def _create_test_database_if_not_exists():
@@ -111,43 +110,12 @@ def client(db: Session) -> Generator[TestClient, None, None]:
 # ============================================================
 
 @pytest.fixture
-def test_user(db: Session) -> User:
-    """Create a test user."""
-    user = User(
-        username="testuser",
-        email="test@example.com",
-        password_hash="hashed_password_here",
-        is_active=True,
-    )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return user
-
-
-@pytest.fixture
-def test_user_2(db: Session) -> User:
-    """Create a second test user."""
-    user = User(
-        username="testuser2",
-        email="test2@example.com",
-        password_hash="hashed_password_here",
-        is_active=True,
-    )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return user
-
-
-@pytest.fixture
-def approved_line(db: Session, test_user: User) -> Line:
+def approved_line(db: Session) -> Line:
     """Create an approved transit line."""
     line = Line(
         name="Test Line 42",
         description="A test transit line",
         status=LineStatus.APPROVED,
-        submitted_by_id=test_user.id,
     )
     db.add(line)
     db.commit()
@@ -156,13 +124,12 @@ def approved_line(db: Session, test_user: User) -> Line:
 
 
 @pytest.fixture
-def pending_line(db: Session, test_user: User) -> Line:
+def pending_line(db: Session) -> Line:
     """Create a pending transit line."""
     line = Line(
         name="Pending Line",
         description="A pending transit line awaiting approval",
         status=LineStatus.PENDING,
-        submitted_by_id=test_user.id,
     )
     db.add(line)
     db.commit()
@@ -171,10 +138,9 @@ def pending_line(db: Session, test_user: User) -> Line:
 
 
 @pytest.fixture
-def recording_session(db: Session, test_user: User, approved_line: Line) -> RecordingSession:
+def recording_session(db: Session, approved_line: Line) -> RecordingSession:
     """Create an in-progress recording session."""
     session = RecordingSession(
-        user_id=test_user.id,
         line_id=approved_line.id,
         direction="northbound",
         device_model="Test Device",
@@ -188,10 +154,9 @@ def recording_session(db: Session, test_user: User, approved_line: Line) -> Reco
 
 
 @pytest.fixture
-def completed_recording(db: Session, test_user: User, approved_line: Line) -> RecordingSession:
+def completed_recording(db: Session, approved_line: Line) -> RecordingSession:
     """Create a completed recording session."""
     session = RecordingSession(
-        user_id=test_user.id,
         line_id=approved_line.id,
         direction="southbound",
         status=RecordingStatus.COMPLETED,

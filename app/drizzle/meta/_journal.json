@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1771767763790,
+      "tag": "0000_exotic_scarlet_witch",
+      "breakpoints": true
+    }
+  ]
+}

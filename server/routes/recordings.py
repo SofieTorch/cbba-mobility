@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models.line import Line, LineStatus
 from models.recording import (
+    EndRecordingRequest,
     LocationPoint,
     LocationPointBatch,
     LocationPointCreate,
@@ -32,29 +33,15 @@ router = APIRouter(prefix="/recordings", tags=["recordings"])
 @router.post("/", response_model=RecordingSessionRead, status_code=201)
 def start_recording(
     session_data: RecordingSessionCreate,
-    user_id: int = Query(..., description="ID of the user starting the recording"),
     db: Session = Depends(get_db)
 ) -> RecordingSessionRead:
     """
     Start a new recording session.
-    
-    The user selects a line (or creates a pending one) and begins recording.
+
+    The line is not required at start; it will be assigned when the session ends.
     """
-    # Verify line exists
-    line = db.get(Line, session_data.line_id)
-    if not line:
-        raise HTTPException(status_code=404, detail="Line not found")
-    
-    # Don't allow recording on merged lines
-    if line.status == LineStatus.MERGED:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Cannot record on merged line. Use line {line.merged_into_id} instead."
-        )
-    
     session = RecordingSession(
-        user_id=user_id,
-        line_id=session_data.line_id,
+        line_id=None,
         direction=session_data.direction,
         device_model=session_data.device_model,
         os_version=session_data.os_version,
@@ -68,7 +55,6 @@ def start_recording(
 
 @router.get("/", response_model=list[RecordingSessionRead])
 def list_recordings(
-    user_id: int | None = None,
     line_id: int | None = None,
     status: RecordingStatus | None = None,
     skip: int = 0,
@@ -77,9 +63,7 @@ def list_recordings(
 ) -> Sequence[RecordingSessionRead]:
     """List recording sessions with optional filters."""
     query = select(RecordingSession)
-    
-    if user_id is not None:
-        query = query.where(RecordingSession.user_id == user_id)
+
     if line_id is not None:
         query = query.where(RecordingSession.line_id == line_id)
     if status is not None:
@@ -103,39 +87,68 @@ def get_recording(session_id: int, db: Session = Depends(get_db)) -> RecordingSe
 
 
 @router.post("/{session_id}/end", response_model=RecordingSessionRead)
-def end_recording(session_id: int, db: Session = Depends(get_db)) -> RecordingSessionRead:
+def end_recording(
+    session_id: int,
+    body: EndRecordingRequest,
+    db: Session = Depends(get_db),
+) -> RecordingSessionRead:
     """
     End a recording session.
-    
-    This marks the session as completed, sets the end time,
-    and computes the path from all location points.
+
+    - If line_id is provided: assign to that line, status COMPLETED.
+    - If line_id is null but line_name is provided: create a new line (PENDING) and assign, status COMPLETED.
+    - If both are null: status DISCARDED.
+    The computed path is always generated from the collected location points.
     """
     session = db.get(RecordingSession, session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Recording session not found")
-    
+
     if session.status != RecordingStatus.IN_PROGRESS:
         raise HTTPException(
             status_code=400,
             detail=f"Session is not in progress (current status: {session.status})"
         )
-    
+
     # Compute path from location points
     points = db.execute(
         select(LocationPoint)
         .where(LocationPoint.session_id == session_id)
         .order_by(LocationPoint.timestamp)
     ).scalars().all()
-    
+
     if len(points) >= 2:
-        # Create LineString from points
         coords = [(p.longitude, p.latitude) for p in points]
         linestring = f"SRID=4326;LINESTRING({', '.join(f'{lon} {lat}' for lon, lat in coords)})"
         session.computed_path = func.ST_GeomFromEWKT(linestring)
-    
-    session.status = RecordingStatus.COMPLETED
+
+    line_name_trimmed = (body.line_name or "").strip()
+
+    if body.line_id is not None:
+        line = db.get(Line, body.line_id)
+        if not line:
+            raise HTTPException(status_code=404, detail="Line not found")
+        if line.status == LineStatus.MERGED:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot assign merged line. Use line {line.merged_into_id} instead.",
+            )
+        session.line_id = body.line_id
+        session.status = RecordingStatus.COMPLETED
+    elif line_name_trimmed:
+        new_line = Line(
+            name=line_name_trimmed,
+            status=LineStatus.PENDING,
+        )
+        db.add(new_line)
+        db.flush()
+        session.line_id = new_line.id
+        session.status = RecordingStatus.COMPLETED
+    else:
+        session.status = RecordingStatus.DISCARDED
+
     session.ended_at = datetime.utcnow()
-    
+
     db.commit()
     db.refresh(session)
     return RecordingSessionRead.model_validate(session)
