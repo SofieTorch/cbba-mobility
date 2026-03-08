@@ -7,6 +7,9 @@ import 'react-native-reanimated';
 import { DatabaseProvider } from '@/components/DatabaseProvider';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
+import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
+import '@/global.css';
+
 const LightTheme: Theme = {
   ...DefaultTheme,
   colors: {
@@ -32,7 +35,9 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    
+    <GluestackUIProvider mode="dark">
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <DatabaseProvider>
         <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : LightTheme}>
           <Stack>
@@ -43,5 +48,7 @@ export default function RootLayout() {
         </ThemeProvider>
       </DatabaseProvider>
     </GestureHandlerRootView>
+    </GluestackUIProvider>
+  
   );
 }
